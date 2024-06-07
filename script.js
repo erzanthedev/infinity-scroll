@@ -1,9 +1,24 @@
 // Delcaring DOM Variables
 const imageContainer = document.getElementById("image-container");
+const loader = document.getElementById("loader");
+
+let ready = false;
+let imagesLoaded = 0;
+let totalImages = 0;
+let photosArray = [];
+
 const apiKey = `NcUPBR07LaF8fxdF86MoZZOkKFs_9og_cy7fi8zNH1I`;
 const count = 30;
 let apiUrl = `https://api.unsplash.com/photos/random?client_id=${apiKey}&count=${count}`;
-let photosArray = [];
+
+// check if all images were loaded
+function imageLoaded() {
+  imagesLoaded++;
+  if (imagesLoaded === totalImages) {
+    ready = true;
+    loader.hidden = true; // hides loader when images are fully loaded
+  }
+}
 
 // Helper Function to set attributes
 function setAttribute(element, attributes) {
@@ -14,6 +29,8 @@ function setAttribute(element, attributes) {
 
 // Function to Display Photos
 const displayPhotos = () => {
+  imagesLoaded = 0;
+  totalImages = photosArray.length;
   // Loop through photosArray
   photosArray.forEach((photo) => {
     // Create an "a" element and set attributes
@@ -33,6 +50,9 @@ const displayPhotos = () => {
       title: photo.alt_description,
     });
 
+    // Event Listner to check when each photo is finished loading
+    imgElement.addEventListener("load", imageLoaded);
+
     // Append elements to image container
     anchorElement.appendChild(imgElement); // Adds "img" to 'a' tag
     imageContainer.appendChild(anchorElement); // Adds "a" to 'imageContainer'
@@ -49,6 +69,17 @@ async function getPhotos() {
     console.log(`Ooops Something went wrong: ${error}`);
   }
 }
+
+// Event Listener, load more photos when scrolled near bottom
+window.addEventListener("scroll", () => {
+  if (
+    window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000 &&
+    ready
+  ) {
+    ready = false;
+    getPhotos();
+  }
+});
 
 // On Load
 getPhotos();
